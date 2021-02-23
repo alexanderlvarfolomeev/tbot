@@ -1,0 +1,8 @@
+.idea
+TelegramBot.iml
+target
+
+data/*
+src/main/resources/props
+src/main/resources/mapping.txt
+logs/*
