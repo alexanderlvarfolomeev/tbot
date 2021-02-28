@@ -6,3 +6,4 @@ data/*
 src/main/resources/props
 src/main/resources/mapping.txt
 logs/*
+todo_list.txt

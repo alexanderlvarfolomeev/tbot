@@ -31,11 +31,9 @@ public class Runner {
             for (final String name : mapperProperties.stringPropertyNames()) {
                 mapper.put(name, mapperProperties.getProperty(name));
             }
-            System.out.println(mapper);
 
             Properties properties = new Properties();
             properties.load(botStream);
-//            System.out.println(properties);
             String username = properties.getProperty("username");
             String token = properties.getProperty("token");
             String path = properties.getProperty("directory");
@@ -45,7 +43,7 @@ public class Runner {
             Objects.requireNonNull(path);
 
             TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
-            botsApi.registerBot(new FileBot(username, token, path, id, mapper));
+            botsApi.registerBot(new FileBot(username, token, path, id).updateMapper());
         } catch (IOException e) {
             System.err.println("Could not initialize bot: " + e.getMessage());
         } catch (TelegramApiException e) {

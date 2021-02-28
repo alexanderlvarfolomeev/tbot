@@ -33,6 +33,11 @@
             <artifactId>telegrambots</artifactId>
             <version>5.0.1.1</version>
         </dependency>
+        <dependency>
+            <groupId>org.telegram</groupId>
+            <artifactId>telegrambotsextensions</artifactId>
+            <version>5.0.1.1</version>
+        </dependency>
     </dependencies>
 
 </project>
