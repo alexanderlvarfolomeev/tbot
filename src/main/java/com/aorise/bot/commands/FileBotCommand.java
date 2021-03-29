@@ -19,7 +19,7 @@ public abstract class FileBotCommand extends BotCommand {
         return message.getText().replaceFirst("\\S+", "").strip();
     }
 
-    void sendMessage(AbsSender sender, Message msg, String text, boolean isNeedToReply) {
+    public static Message sendMessage(AbsSender sender, Message msg, String text, boolean isNeedToReply) {
         SendMessage message = new SendMessage();
         message.setText(text);
         message.setChatId(msg.getChatId().toString());
@@ -27,11 +27,12 @@ public abstract class FileBotCommand extends BotCommand {
             message.setReplyToMessageId(msg.getMessageId());
         }
         try {
-            sender.execute(message);
+            return sender.execute(message);
         } catch (TelegramApiException e) {
             BotLogger.botExc(e.getMessage());
             e.printStackTrace();
         }
+        return null;
     }
 
     @Override
