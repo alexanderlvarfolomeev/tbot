@@ -88,6 +88,7 @@ public class FileBot extends TelegramLongPollingCommandBot {
         return this;
     }
 
+    // TODO: implement Autocloseable
     public void saveContexts() {
         try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream("src/main/resources/contexts"))) {
             objectOutputStream.writeObject(contextMap);

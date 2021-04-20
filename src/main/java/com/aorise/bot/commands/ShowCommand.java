@@ -24,9 +24,6 @@ public class ShowCommand extends FileBotCommand {
     @Override
     public String processMessageImpl(AbsSender absSender, Message msg, String[] arguments) {
         FileBot bot = (FileBot) absSender;
-        if (bot.getId() != msg.getFrom().getId()) {
-            return "Show. Message was not from Admin.";
-        }
         String text = stripCommand(msg);
 
         text = text.toLowerCase();
