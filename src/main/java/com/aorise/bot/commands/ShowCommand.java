@@ -34,27 +34,29 @@ public class ShowCommand extends FileBotCommand {
             text = bot.getMapper().get(text);
             SendPhoto photo = new SendPhoto();
             photo.setChatId(String.valueOf(msg.getChatId()));
+            String toReturn;
             try (Stream<Path> pathStream = Files.walk(bot.getDirectory().resolve(text))) {
                 List<Path> paths = pathStream.filter(p -> !Files.isDirectory(p)).collect(Collectors.toList());
                 Path path = FileBot.getRandom(paths);
                 if (path == null) {
                     BotLogger.botExc("\"" + text + "\" is empty directory.");
                     sendMessage(absSender, msg, "Sorry, can't find any pics.", false);
-                    return "Empty dir.";
+                    toReturn = "Empty dir.";
                 } else {
                     photo.setPhoto(new InputFile(path.toFile()));
                     bot.execute(photo);
-                    return "File \"" + path.toFile().getCanonicalPath() + "\" was sent";
+                    toReturn = "File \"" + path.toFile().getCanonicalPath() + "\" was sent";
                 }
             } catch (IOException e) {
                 BotLogger.visitorExc(e);
                 sendMessage(absSender, msg, "Oh shit, I'm sorry. IOException.", false);
-                return "IOException occurred.";
+                toReturn = "IOException occurred.";
             } catch (TelegramApiException e) {
                 BotLogger.botExc(e.getMessage());
                 e.printStackTrace();
-                return "TelegramApiException.";
+                toReturn = "TelegramApiException.";
             }
+            return toReturn;
         }
     }
 }

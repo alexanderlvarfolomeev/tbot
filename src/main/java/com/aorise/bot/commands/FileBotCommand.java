@@ -1,6 +1,7 @@
 package com.aorise.bot.commands;
 
 import com.aorise.BotLogger;
+import com.aorise.bot.FileBot;
 import com.aorise.util.MessageDescriber;
 import org.telegram.telegrambots.extensions.bots.commandbot.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -37,7 +38,10 @@ public abstract class FileBotCommand extends BotCommand {
 
     @Override
     public void processMessage(AbsSender absSender, Message message, String[] arguments) {
-        BotLogger.log(String.format("%n%s.%nResult: %s", MessageDescriber.describe(message), processMessageImpl(absSender, message, arguments)));
+        FileBot bot = (FileBot) absSender;
+        if (bot.isReady()) {
+            BotLogger.log(String.format("%n%s.%nResult: %s", MessageDescriber.describe(message), processMessageImpl(absSender, message, arguments)));
+        }
     }
 
     protected abstract String processMessageImpl(AbsSender absSender, Message message, String[] arguments);

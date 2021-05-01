@@ -2,34 +2,43 @@ package com.aorise.bot;
 
 import com.aorise.BotLogger;
 import com.aorise.bot.commands.*;
+import com.aorise.bot.handlers.OshieteHandler;
+import com.aorise.util.Loader;
 import com.aorise.util.MessageDescriber;
+import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.extensions.bots.commandbot.TelegramLongPollingCommandBot;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-public class FileBot extends TelegramLongPollingCommandBot {
+public class FileBot extends TelegramLongPollingCommandBot implements AutoCloseable {
     private final int id;
     private final String username;
     private final String token;
     private final Path directory;
+    private final long time;
+    private boolean ready;
     private Map<String, String> mapper;
     private Map<Long, ChatContext> contextMap = new HashMap<>();
+    private final OshieteHandler oshieteHandler;
 
     private static final Random RANDOM = new Random();
     private static final Map<String, String> INITIAL_MAPPER = new HashMap<>();
 
-    public FileBot(String username, String token, String path, int id) {
+    public FileBot(String username, String token, String path, int id, DefaultBotOptions options) {
+        super(options);
         this.username = username;
         this.token = token;
         directory = Path.of(path);
         this.mapper = INITIAL_MAPPER;
         this.id = id;
+        this.time = System.currentTimeMillis();
+        this.ready = false;
+        oshieteHandler = new OshieteHandler(this);
         //TODO help, gachi
         register(new StartCommand("start", "Старт"));
         register(new SaveCommand("saveme", "Save"));
@@ -38,8 +47,8 @@ public class FileBot extends TelegramLongPollingCommandBot {
         register(new ShowCommand("show", "Показать пикчу"));
         register(new HornyCommand("horny", "В случае хорни."));
         register(new UpdateMappingCommand("update","Обновить отображение /show"));
-        register(new OshieteCommand("deadinside", "Узнать, кто в чате настоящий dead inside"));
-        register(new OshieteOverCommand("deadoutside", "Остановить игру"));
+        register(new OshieteCommand("deadinside", "Узнать, кто в чате настоящий dead inside", oshieteHandler));
+        register(new OshieteOverCommand("deadoutside", "Остановить игру", oshieteHandler));
         // register(new HelpCommand("help","Помощь"));
         // register(new GachiCommand("gachi",""));
     }
@@ -52,6 +61,19 @@ public class FileBot extends TelegramLongPollingCommandBot {
         return token;
     }
 
+    public boolean isReady() {
+        if (ready) {
+            return true;
+        } else {
+            ready = System.currentTimeMillis() - time > 10_000L;
+            return ready;
+        }
+    }
+
+    public static int random(int bound) {
+        return RANDOM.nextInt(bound);
+    }
+
     public boolean onStart(long idx) {
         return contextMap.putIfAbsent(idx, new ChatContext()) == null;
     }
@@ -61,14 +83,8 @@ public class FileBot extends TelegramLongPollingCommandBot {
     }
 
     public FileBot updateMapper() {
-        Map<String, String> localMapper = new HashMap<>();
-        try (BufferedReader mapperReader = Files.newBufferedReader(Path.of("src/main/resources/mapping.txt"), StandardCharsets.UTF_8)) {
-            Properties mapperProperties = new Properties();
-            mapperProperties.load(mapperReader);
-            for (final String name : mapperProperties.stringPropertyNames()) {
-                localMapper.put(name, mapperProperties.getProperty(name));
-            }
-            mapper = localMapper;
+        try {
+            mapper = Loader.loadMapper("src/main/resources/mapping.txt");
         } catch (IOException e) {
             BotLogger.botExc("Couldn't update mapper: " + e.getMessage());
         }
@@ -77,7 +93,6 @@ public class FileBot extends TelegramLongPollingCommandBot {
 
     @SuppressWarnings("unchecked")
     public FileBot loadContexts() {
-        System.out.println(Files.isRegularFile(Path.of("src/main/resources/contexts")));
         if (Files.isRegularFile(Path.of("src/main/resources/contexts"))) {
             try (ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream("src/main/resources/contexts"))) {
                 contextMap = (Map<Long, ChatContext>) objectInputStream.readObject();
@@ -88,7 +103,6 @@ public class FileBot extends TelegramLongPollingCommandBot {
         return this;
     }
 
-    // TODO: implement Autocloseable
     public void saveContexts() {
         try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream("src/main/resources/contexts"))) {
             objectOutputStream.writeObject(contextMap);
@@ -98,59 +112,26 @@ public class FileBot extends TelegramLongPollingCommandBot {
         }
     }
 
-
-
     @Override
     public void processNonCommandUpdate(Update update) {
         if (update.hasMessage()) {
-            BotLogger.log(String.format("Non command message. %s", MessageDescriber.describe(update.getMessage())));
+            BotLogger.log(String.format("Non command message. %s%n%s", MessageDescriber.describe(update.getMessage()), update.getMessage().toString()));
             ChatContext context = contextMap.get(update.getMessage().getChatId());
             Message message = update.getMessage();
             Message replyToMessage = message.getReplyToMessage();
             if (context != null && replyToMessage != null) {
                 if (Objects.equals(context.getGhoulMessageId(), replyToMessage.getMessageId())) {
-                    //TODO: to separated method + polish
-                    if (message.hasText()) {
-                        try {
-                            int intText = Integer.parseInt(message.getText());
-                            if (context.getGhoulCounter() == intText) {
-                                if (intText == 6) {
-                                    FileBotCommand.sendMessage(this, message, "Чел доказал, что он реальный дед инсайд.", true);
-                                    context.setGhoulCounter(null);
-                                    context.setGhoulMessageId(null);
-                                    BotLogger.log("Ghoul game has been stopped in " + update.getMessage().getChatId());
-                                } else {
-                                    Message sent = FileBotCommand.sendMessage(this, message, String.format("%d - 7?", context.getGhoulCounter()), false);
-                                    if (sent != null) {
-                                        context.setGhoulMessageId(sent.getMessageId());
-                                        context.setGhoulCounter(intText - 7);
-                                    }
-                                }
-                            } else {
-                                int x = RANDOM.nextInt(10);
-                                if (x == 0) {
-                                    FileBotCommand.sendMessage(this, message, "Чел ты...", true);
-                                }
-                                if (x == 1) {
-                                    FileBotCommand.sendMessage(this, message, "Ты жалок.", true);
-                                }
-                                System.out.println(x);
-                            }
-                        } catch (NumberFormatException e) {
-                            //NAN
-                        }
-                    }
+                    oshieteHandler.onGhoulMessage(context, message);
                 }
             }
         } else {
-            BotLogger.log("Update doesn't contain message");
+            BotLogger.log(String.format("Update doesn't contain message: %s", update.toString()));
         }
     }
 
     @Override
     protected void processInvalidCommandUpdate(Update update) {
-        super.processInvalidCommandUpdate(update);
-        //TODO: ?
+        processNonCommandUpdate(update);
     }
 
     //TODO make it one of CommandRegistry defaultConsumer part (if the command contains bot username)
@@ -175,7 +156,12 @@ public class FileBot extends TelegramLongPollingCommandBot {
     }
 
     public static <T> T getRandom(List<T> list) {
-        return list.isEmpty() ? null : list.get(RANDOM.nextInt(list.size()));
+        return list.isEmpty() ? null : list.get(random(list.size()));
+    }
+
+    @Override
+    public void close() {
+        saveContexts();
     }
 
     public static class ChatContext implements Serializable {
