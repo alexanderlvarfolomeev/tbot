@@ -25,8 +25,12 @@ public class ShowCommand extends FileBotCommand {
         String got = bot.getMapper().get(text);
         if (got != null) {
             String restriction = bot.getExc_mapper().get(got);
-            if (Long.parseLong(restriction) != chatId) {
-                got = null;
+            try {
+                if (restriction != null && Long.parseLong(restriction) != chatId) {
+                    got = null;
+                }
+            } catch (NumberFormatException e) {
+                //nothing
             }
         }
         return got;
