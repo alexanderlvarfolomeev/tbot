@@ -21,17 +21,28 @@ public class ShowCommand extends FileBotCommand {
         super(commandId, description);
     }
 
+    private String get(FileBot bot, String text, long chatId) {
+        String got = bot.getMapper().get(text);
+        if (got != null) {
+            String restriction = bot.getExc_mapper().get(got);
+            if (Long.parseLong(restriction) != chatId) {
+                got = null;
+            }
+        }
+        return got;
+    }
+
     @Override
     public String processMessageImpl(AbsSender absSender, Message msg, String[] arguments) {
         FileBot bot = (FileBot) absSender;
-        String text = stripCommand(msg);
+        String initText = stripCommand(msg);
 
-        text = text.toLowerCase();
-        if (!bot.getMapper().containsKey(text)) {
+        String text = get(bot, initText.toLowerCase(), msg.getChatId());
+
+        if (text == null) {
             sendMessage(absSender, msg, "Not implemented yet (or maybe never).", false);
-            return "Key \"" + text + "\" is not found.";
+            return "Key \"" + initText + "\" is not found.";
         } else {
-            text = bot.getMapper().get(text);
             SendPhoto photo = new SendPhoto();
             photo.setChatId(String.valueOf(msg.getChatId()));
             String toReturn;
@@ -48,7 +59,7 @@ public class ShowCommand extends FileBotCommand {
                     toReturn = "File \"" + path.toFile().getCanonicalPath() + "\" was sent";
                 }
             } catch (IOException e) {
-                BotLogger.visitorExc(e);
+                BotLogger.exc(e);
                 sendMessage(absSender, msg, "Oh shit, I'm sorry. IOException.", false);
                 toReturn = "IOException occurred.";
             } catch (TelegramApiException e) {

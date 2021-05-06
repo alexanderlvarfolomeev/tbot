@@ -15,6 +15,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
+import com.aorise.bot.BotConst;
+
 public class FileBot extends TelegramLongPollingCommandBot implements AutoCloseable {
     private final int id;
     private final String username;
@@ -23,6 +25,7 @@ public class FileBot extends TelegramLongPollingCommandBot implements AutoClosea
     private final long time;
     private boolean ready;
     private Map<String, String> mapper;
+    private Map<String, String> exc_mapper;
     private Map<Long, ChatContext> contextMap = new HashMap<>();
     private final OshieteHandler oshieteHandler;
 
@@ -35,6 +38,7 @@ public class FileBot extends TelegramLongPollingCommandBot implements AutoClosea
         this.token = token;
         directory = Path.of(path);
         this.mapper = INITIAL_MAPPER;
+        this.exc_mapper = INITIAL_MAPPER;
         this.id = id;
         this.time = System.currentTimeMillis();
         this.ready = false;
@@ -84,7 +88,8 @@ public class FileBot extends TelegramLongPollingCommandBot implements AutoClosea
 
     public FileBot updateMapper() {
         try {
-            mapper = Loader.loadMapper("src/main/resources/mapping.txt");
+            mapper = Loader.loadMapper(BotConst.MAPPING);
+            exc_mapper = Loader.loadMapper(BotConst.EXC_MAPPING);
         } catch (IOException e) {
             BotLogger.botExc("Couldn't update mapper: " + e.getMessage());
         }
@@ -93,8 +98,8 @@ public class FileBot extends TelegramLongPollingCommandBot implements AutoClosea
 
     @SuppressWarnings("unchecked")
     public FileBot loadContexts() {
-        if (Files.isRegularFile(Path.of("src/main/resources/contexts"))) {
-            try (ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream("src/main/resources/contexts"))) {
+        if (Files.isRegularFile(BotConst.CONTEXTS)) {
+            try (ObjectInputStream objectInputStream = new ObjectInputStream(Files.newInputStream(BotConst.CONTEXTS))) {
                 contextMap = (Map<Long, ChatContext>) objectInputStream.readObject();
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
@@ -104,7 +109,7 @@ public class FileBot extends TelegramLongPollingCommandBot implements AutoClosea
     }
 
     public void saveContexts() {
-        try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream("src/main/resources/contexts"))) {
+        try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(Files.newOutputStream(BotConst.CONTEXTS))) {
             objectOutputStream.writeObject(contextMap);
             objectOutputStream.flush();
         } catch (IOException e) {
@@ -115,7 +120,7 @@ public class FileBot extends TelegramLongPollingCommandBot implements AutoClosea
     @Override
     public void processNonCommandUpdate(Update update) {
         if (update.hasMessage()) {
-            BotLogger.log(String.format("Non command message. %s%n%s", MessageDescriber.describe(update.getMessage()), update.getMessage().toString()));
+            BotLogger.log(String.format("Non command message. %s", MessageDescriber.describe(update.getMessage())));
             ChatContext context = contextMap.get(update.getMessage().getChatId());
             Message message = update.getMessage();
             Message replyToMessage = message.getReplyToMessage();
@@ -149,6 +154,10 @@ public class FileBot extends TelegramLongPollingCommandBot implements AutoClosea
 
     public Map<String, String> getMapper() {
         return mapper;
+    }
+
+    public Map<String, String> getExc_mapper() {
+        return exc_mapper;
     }
 
     public int getId() {

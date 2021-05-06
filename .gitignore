@@ -5,6 +5,7 @@ target
 data/*
 src/main/resources/props
 src/main/resources/mapping.txt
+src/main/resources/exc_mapping.txt
 logs/*
 todo_list.txt
 src/main/resources/contexts

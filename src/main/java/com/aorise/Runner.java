@@ -52,6 +52,7 @@ public class Runner {
                     Scanner scanner = new Scanner(System.in)) {
                 BotSession session = botsApi.registerBot(bot);
                 BotLogger.log("Bot started");
+                System.out.println("=============>>");
                 ConsoleCommands cont;
 
                 while((cont = getCommand(scanner.nextLine().toUpperCase(Locale.ROOT))) != ConsoleCommands.STOP) {
