@@ -1,5 +1,6 @@
 package com.aorise.bot.commands;
 
+import com.aorise.bot.FileBot;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.bots.AbsSender;
 
@@ -9,8 +10,8 @@ public class AliveCommand extends FileBotCommand {
     }
 
     @Override
-    public String processMessageImpl(AbsSender absSender, Message message, String[] arguments) {
-        sendMessage(absSender, message, "I'm still alive.", true);
+    public String processMessageImpl(FileBot bot, Message message, String[] arguments) {
+        sendMessage(bot, message, "I'm still alive.", true);
         return "Alive.";
     }
 }

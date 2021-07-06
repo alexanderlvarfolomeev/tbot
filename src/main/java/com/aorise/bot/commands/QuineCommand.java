@@ -1,5 +1,6 @@
 package com.aorise.bot.commands;
 
+import com.aorise.bot.FileBot;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.bots.AbsSender;
 
@@ -9,10 +10,10 @@ public class QuineCommand extends FileBotCommand {
     }
 
     @Override
-    public String processMessageImpl(AbsSender absSender, Message message, String[] arguments) {
+    public String processMessageImpl(FileBot bot, Message message, String[] arguments) {
         String text = stripCommand(message);
         if (!text.isEmpty()) {
-            sendMessage(absSender, message, text, false);
+            sendMessage(bot, message, text, false);
         }
         return "Quine was sent.";
     }

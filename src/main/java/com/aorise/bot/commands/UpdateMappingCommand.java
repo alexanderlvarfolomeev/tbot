@@ -10,8 +10,8 @@ public class UpdateMappingCommand extends FileBotAdminCommand {
     }
 
     @Override
-    protected String processMessageImpl(AbsSender absSender, Message message, String[] arguments) {
-        ((FileBot) absSender).updateMapper();
+    protected String processMessageImpl(FileBot bot, Message message, String[] arguments) {
+        bot.updateMapper();
         return "Mapper update.";
     }
 }

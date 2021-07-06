@@ -40,11 +40,11 @@ public abstract class FileBotCommand extends BotCommand {
     public void processMessage(AbsSender absSender, Message message, String[] arguments) {
         FileBot bot = (FileBot) absSender;
         if (bot.isReady()) {
-            BotLogger.log(String.format("%n%s.%nResult: %s", MessageDescriber.describe(message), processMessageImpl(absSender, message, arguments)));
+            BotLogger.log(String.format("%s. Result: %s", MessageDescriber.describe(message), processMessageImpl(bot, message, arguments)));
         }
     }
 
-    protected abstract String processMessageImpl(AbsSender absSender, Message message, String[] arguments);
+    protected abstract String processMessageImpl(FileBot bot, Message message, String[] arguments);
 
     public void execute(AbsSender absSender, User user, Chat chat, String[] strings) {
         // useless

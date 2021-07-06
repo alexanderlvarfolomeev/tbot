@@ -16,8 +16,7 @@ public class HornyCommand extends FileBotCommand {
     }
 
     @Override
-    protected String processMessageImpl(AbsSender absSender, Message message, String[] arguments) {
-        FileBot bot = (FileBot) absSender;
+    protected String processMessageImpl(FileBot bot, Message message, String[] arguments) {
         SendSticker sticker = new SendSticker();
         sticker.setChatId(message.getChatId().toString());
         sticker.setSticker(new InputFile(fileId));

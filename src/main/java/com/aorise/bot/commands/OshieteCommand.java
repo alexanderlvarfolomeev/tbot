@@ -1,5 +1,6 @@
 package com.aorise.bot.commands;
 
+import com.aorise.bot.FileBot;
 import com.aorise.bot.handlers.OshieteHandler;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.bots.AbsSender;
@@ -13,7 +14,7 @@ public class OshieteCommand extends FileBotCommand {
     }
 
     @Override
-    protected String processMessageImpl(AbsSender absSender, Message message, String[] arguments) {
+    protected String processMessageImpl(FileBot bot, Message message, String[] arguments) {
         return oshieteHandler.startGame(message);
     }
 }

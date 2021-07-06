@@ -6,7 +6,7 @@ import com.aorise.util.MessageDescriber;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.bots.AbsSender;
 
-public abstract class FileBotAdminCommand extends FileBotCommand{
+public abstract class FileBotAdminCommand extends FileBotCommand {
     public FileBotAdminCommand(String commandIdentifier, String description) {
         super(commandIdentifier, description);
     }

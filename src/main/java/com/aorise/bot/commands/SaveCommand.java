@@ -10,8 +10,7 @@ public class SaveCommand extends FileBotAdminCommand {
     }
 
     @Override
-    protected String processMessageImpl(AbsSender absSender, Message message, String[] arguments) {
-        FileBot bot = (FileBot) absSender;
+    protected String processMessageImpl(FileBot bot, Message message, String[] arguments) {
         bot.saveContexts();
         return "Saved";
     }

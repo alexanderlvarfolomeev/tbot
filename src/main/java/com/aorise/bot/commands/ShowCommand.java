@@ -37,14 +37,13 @@ public class ShowCommand extends FileBotCommand {
     }
 
     @Override
-    public String processMessageImpl(AbsSender absSender, Message msg, String[] arguments) {
-        FileBot bot = (FileBot) absSender;
+    public String processMessageImpl(FileBot bot, Message msg, String[] arguments) {
         String initText = stripCommand(msg);
 
         String text = get(bot, initText.toLowerCase(), msg.getChatId());
 
         if (text == null) {
-            sendMessage(absSender, msg, "Not implemented yet (or maybe never).", false);
+            sendMessage(bot, msg, "Not implemented yet (or maybe never).", false);
             return "Key \"" + initText + "\" is not found.";
         } else {
             SendPhoto photo = new SendPhoto();
@@ -55,16 +54,16 @@ public class ShowCommand extends FileBotCommand {
                 Path path = FileBot.getRandom(paths);
                 if (path == null) {
                     BotLogger.botExc("\"" + text + "\" is empty directory.");
-                    sendMessage(absSender, msg, "Sorry, can't find any pics.", false);
+                    sendMessage(bot, msg, "Sorry, can't find any pics.", false);
                     toReturn = "Empty dir.";
                 } else {
                     photo.setPhoto(new InputFile(path.toFile()));
                     bot.execute(photo);
-                    toReturn = "File \"" + path.toFile().getCanonicalPath() + "\" was sent";
+                    toReturn = "File \"" + path + "\" was sent.";
                 }
             } catch (IOException e) {
                 BotLogger.exc(e);
-                sendMessage(absSender, msg, "Oh shit, I'm sorry. IOException.", false);
+                sendMessage(bot, msg, "Oh shit, I'm sorry. IOException.", false);
                 toReturn = "IOException occurred.";
             } catch (TelegramApiException e) {
                 BotLogger.botExc(e.getMessage());

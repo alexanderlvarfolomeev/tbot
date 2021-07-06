@@ -14,6 +14,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.IntStream;
 
 import com.aorise.bot.BotConst;
 
@@ -47,14 +48,17 @@ public class FileBot extends TelegramLongPollingCommandBot implements AutoClosea
         register(new StartCommand("start", "Старт"));
         register(new SaveCommand("saveme", "Save"));
         register(new AliveCommand("alive", "Проверка на проявление признаков жизнедеятельности"));
-        register(new QuineCommand("quine", "Продублировать сообщение"));
+        register(new QuineCommand("repeat", "Продублировать сообщение"));
         register(new ShowCommand("show", "Показать пикчу"));
         register(new HornyCommand("horny", "В случае хорни."));
         register(new UpdateMappingCommand("update","Обновить отображение /show"));
         register(new OshieteCommand("deadinside", "Узнать, кто в чате настоящий dead inside", oshieteHandler));
         register(new OshieteOverCommand("deadoutside", "Остановить игру", oshieteHandler));
+        register(new RollCommand("roll", "Ролльнуть дайсы"));
+        register(new ListMapCommand("showlist", "Показать одобренные партией теги"));
         // register(new HelpCommand("help","Помощь"));
-        // register(new GachiCommand("gachi",""));
+        // register(new GachiCommand("gachi","Gachi"));
+        register(new TestCommand("test", "Test"));
     }
 
     public String getBotUsername() {
@@ -69,13 +73,17 @@ public class FileBot extends TelegramLongPollingCommandBot implements AutoClosea
         if (ready) {
             return true;
         } else {
-            ready = System.currentTimeMillis() - time > 10_000L;
+            ready = System.currentTimeMillis() - time > 5_000L;
             return ready;
         }
     }
 
     public static int random(int bound) {
         return RANDOM.nextInt(bound);
+    }
+
+    public static Random getRandom() {
+        return RANDOM;
     }
 
     public boolean onStart(long idx) {
@@ -120,16 +128,17 @@ public class FileBot extends TelegramLongPollingCommandBot implements AutoClosea
     @Override
     public void processNonCommandUpdate(Update update) {
         if (update.hasMessage()) {
-            BotLogger.log(String.format("Non command message. %s", MessageDescriber.describe(update.getMessage())));
             ChatContext context = contextMap.get(update.getMessage().getChatId());
             Message message = update.getMessage();
             Message replyToMessage = message.getReplyToMessage();
             if (context != null && replyToMessage != null) {
                 if (Objects.equals(context.getGhoulMessageId(), replyToMessage.getMessageId())) {
+                    BotLogger.log(String.format("Non command \"oshiete\" message. %s", MessageDescriber.describe(update.getMessage())));
                     oshieteHandler.onGhoulMessage(context, message);
                 }
             }
         } else {
+            //TODO: for now, it's ok, but talking about the future...
             BotLogger.log(String.format("Update doesn't contain message: %s", update.toString()));
         }
     }
@@ -176,6 +185,11 @@ public class FileBot extends TelegramLongPollingCommandBot implements AutoClosea
     public static class ChatContext implements Serializable {
         private Integer ghoulCounter = null;
         private Integer ghoulMessageId = null;
+//        private final Map<String, Long> name2Id = new HashMap<>();
+//
+//        public Map<String, Long> getName2Id() {
+//            return name2Id;
+//        }
 
         public Integer getGhoulCounter() {
             return ghoulCounter;

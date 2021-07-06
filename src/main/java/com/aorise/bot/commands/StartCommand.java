@@ -10,13 +10,12 @@ public class StartCommand extends FileBotCommand {
     }
 
     @Override
-    protected String processMessageImpl(AbsSender absSender, Message message, String[] arguments) {
-        FileBot bot = (FileBot) absSender;
+    protected String processMessageImpl(FileBot bot, Message message, String[] arguments) {
         bot.onStart(message.getChatId());
         if (bot.onStart(message.getChatId())) {
-            sendMessage(absSender, message, "Hello there.", false);
+            sendMessage(bot, message, "Hello there.", false);
         } else {
-            sendMessage(absSender, message, "You do not need to repeat it.", false);
+            sendMessage(bot, message, "You do not need to repeat it.", false);
         }
         return String.format("Start in %d.", message.getChatId());
     }

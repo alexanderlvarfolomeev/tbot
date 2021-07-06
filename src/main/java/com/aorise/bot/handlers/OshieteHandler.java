@@ -38,7 +38,6 @@ public class OshieteHandler {
                     if (x == 1) {
                         FileBotCommand.sendMessage(bot, message, "Ты жалок.", true);
                     }
-                    System.out.println(x);
                 }
             } catch (NumberFormatException e) {
                 //NAN
