@@ -2,7 +2,9 @@ package com.aorise.bot.handlers;
 
 import com.aorise.BotLogger;
 import com.aorise.bot.FileBot;
+import com.aorise.db.entity.ChatContext;
 import com.aorise.bot.commands.FileBotCommand;
+import com.aorise.util.Utils;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 public class OshieteHandler {
@@ -12,7 +14,7 @@ public class OshieteHandler {
         this.bot = bot;
     }
 
-    public void onGhoulMessage(FileBot.ChatContext context, Message message) {
+    public void onGhoulMessage(ChatContext context, Message message) {
         //TODO: polish
         if (message.hasText()) {
             try {
@@ -31,12 +33,16 @@ public class OshieteHandler {
                         }
                     }
                 } else {
-                    int x = FileBot.random(10);
-                    if (x == 0) {
-                        FileBotCommand.sendMessage(bot, message, "Чел ты...", true);
-                    }
-                    if (x == 1) {
-                        FileBotCommand.sendMessage(bot, message, "Ты жалок.", true);
+                    String answer = switch (Utils.random(15)) {
+                        case 0 -> "Чел ты...";
+                        case 1 -> "Ты жалок.";
+                        case 2 -> "Чекай мать";
+                        case 3 -> "В муте";
+                        case 4 -> "Соболезную";
+                        default -> null;
+                    };
+                    if (answer != null) {
+                        FileBotCommand.sendMessage(bot, message, answer, true);
                     }
                 }
             } catch (NumberFormatException e) {
@@ -46,19 +52,20 @@ public class OshieteHandler {
     }
 
     public String startGame(Message message) {
-        FileBot.ChatContext context = bot.getContext(message.getChatId());
+        ChatContext context = bot.getContext(message.getChatId());
         if (context == null) {
             bot.onStart(message.getChatId());
             context = bot.getContext(message.getChatId());
         }
         if (context.getGhoulCounter() != null) {
-            FileBotCommand.sendMessage(bot, message, "The fight to be the deadest inside is already in progress.", false);
+            FileBotCommand.sendMessage(bot, message, "Битва за право называться дединсайдом уже в прогрессе.", false);
             return "Double ghoul game start";
         }
         context.setGhoulCounter(993);
-        Message sent = FileBotCommand.sendMessage(bot, message, "Okay... 1000 - 7?", false);
+        Message sent = FileBotCommand.sendMessage(bot, message, "Ок... 1000 - 7?", false);
         if (sent != null) {
             context.setGhoulMessageId(sent.getMessageId());
+            bot.getDbHandler().getChatContextService().save(context);
             return "The ghoul game has been started.";
         } else {
             context.setGhoulCounter(null);
@@ -67,13 +74,14 @@ public class OshieteHandler {
     }
 
     public String stopGame(Message message) {
-        FileBot.ChatContext context = bot.getContext(message.getChatId());
+        ChatContext context = bot.getContext(message.getChatId());
         if (context == null) {
             return "There is no game";
         }
         context.setGhoulCounter(null);
         context.setGhoulMessageId(null);
-        FileBotCommand.sendMessage(bot, message, "Okay there are no deadinsides in this chat.", false);
+        bot.getDbHandler().getChatContextService().save(context);
+        FileBotCommand.sendMessage(bot, message, "Окей, в этом чате нет дединсайдов.", false);
         return "Stopped";
     }
 }

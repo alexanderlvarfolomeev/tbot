@@ -16,7 +16,7 @@ public abstract class FileBotCommand extends BotCommand {
         super(commandIdentifier, description);
     }
 
-    static String stripCommand(Message message) {
+    public static String stripCommand(Message message) {
         return message.getText().replaceFirst("\\S+", "").strip();
     }
 

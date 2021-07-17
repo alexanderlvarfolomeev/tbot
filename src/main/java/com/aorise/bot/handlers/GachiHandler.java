@@ -1,6 +1,8 @@
 package com.aorise.bot.handlers;
 
 import com.aorise.bot.FileBot;
+import com.aorise.db.entity.ChatContext;
+import com.aorise.util.Utils;
 import org.telegram.telegrambots.meta.api.objects.User;
 
 public class GachiHandler {
@@ -11,7 +13,7 @@ public class GachiHandler {
     }
 
     public boolean register(User user, long chatId) {
-        FileBot.ChatContext context = bot.getContext(chatId);
+        ChatContext context = bot.getContext(chatId);
 //        boolean presented = context
 //                .getName2Id()
 //                .entrySet()
@@ -36,7 +38,7 @@ public class GachiHandler {
             return null;
         } else {
             //TODO
-            return FileBot.random(2) == 0 ? user.getUserName() : mention;
+            return Utils.random(2) == 0 ? user.getUserName() : mention;
         }
     }
 }

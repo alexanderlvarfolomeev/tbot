@@ -11,7 +11,6 @@ public class StartCommand extends FileBotCommand {
 
     @Override
     protected String processMessageImpl(FileBot bot, Message message, String[] arguments) {
-        bot.onStart(message.getChatId());
         if (bot.onStart(message.getChatId())) {
             sendMessage(bot, message, "Hello there.", false);
         } else {

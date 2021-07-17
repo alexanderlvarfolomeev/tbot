@@ -2,63 +2,60 @@ package com.aorise.bot;
 
 import com.aorise.BotLogger;
 import com.aorise.bot.commands.*;
+import com.aorise.bot.handlers.DBHandler;
 import com.aorise.bot.handlers.OshieteHandler;
-import com.aorise.util.Loader;
+import com.aorise.bot.handlers.ShowHandler;
+import com.aorise.db.entity.ChatContext;
 import com.aorise.util.MessageDescriber;
+import com.aorise.util.Utils;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.extensions.bots.commandbot.TelegramLongPollingCommandBot;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-import java.io.*;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.stream.IntStream;
 
-import com.aorise.bot.BotConst;
-
-public class FileBot extends TelegramLongPollingCommandBot implements AutoCloseable {
+public class FileBot extends TelegramLongPollingCommandBot {
     private final int id;
     private final String username;
     private final String token;
     private final Path directory;
     private final long time;
     private boolean ready;
-    private Map<String, String> mapper;
-    private Map<String, String> exc_mapper;
-    private Map<Long, ChatContext> contextMap = new HashMap<>();
     private final OshieteHandler oshieteHandler;
+    private final ShowHandler showHandler;
+    private final DBHandler dbHandler;
 
-    private static final Random RANDOM = new Random();
-    private static final Map<String, String> INITIAL_MAPPER = new HashMap<>();
-
-    public FileBot(String username, String token, String path, int id, DefaultBotOptions options) {
+    public FileBot(String username, String token, String path, int id, DBHandler dbHandler, DefaultBotOptions options) {
         super(options);
         this.username = username;
         this.token = token;
         directory = Path.of(path);
-        this.mapper = INITIAL_MAPPER;
-        this.exc_mapper = INITIAL_MAPPER;
         this.id = id;
         this.time = System.currentTimeMillis();
         this.ready = false;
         oshieteHandler = new OshieteHandler(this);
+        showHandler = new ShowHandler(this);
+        this.dbHandler = dbHandler;
         //TODO help, gachi
         register(new StartCommand("start", "Старт"));
-        register(new SaveCommand("saveme", "Save"));
         register(new AliveCommand("alive", "Проверка на проявление признаков жизнедеятельности"));
         register(new QuineCommand("repeat", "Продублировать сообщение"));
-        register(new ShowCommand("show", "Показать пикчу"));
+        register(new ShowCommand("show", "Показать пикчу", false, showHandler));
+        register(new ShowCommand("showrt", "Показать оцениваемую пикчу", true, showHandler));
         register(new HornyCommand("horny", "В случае хорни."));
-        register(new UpdateMappingCommand("update","Обновить отображение /show"));
         register(new OshieteCommand("deadinside", "Узнать, кто в чате настоящий dead inside", oshieteHandler));
         register(new OshieteOverCommand("deadoutside", "Остановить игру", oshieteHandler));
         register(new RollCommand("roll", "Ролльнуть дайсы"));
         register(new ListMapCommand("showlist", "Показать одобренные партией теги"));
         // register(new HelpCommand("help","Помощь"));
         // register(new GachiCommand("gachi","Gachi"));
-        register(new TestCommand("test", "Test"));
+    }
+
+    public DBHandler getDbHandler() {
+        return dbHandler;
     }
 
     public String getBotUsername() {
@@ -78,66 +75,43 @@ public class FileBot extends TelegramLongPollingCommandBot implements AutoClosea
         }
     }
 
-    public static int random(int bound) {
-        return RANDOM.nextInt(bound);
-    }
-
-    public static Random getRandom() {
-        return RANDOM;
-    }
-
-    public boolean onStart(long idx) {
-        return contextMap.putIfAbsent(idx, new ChatContext()) == null;
-    }
-
-    public ChatContext getContext(long idx) {
-        return contextMap.get(idx);
-    }
-
-    public FileBot updateMapper() {
-        try {
-            mapper = Loader.loadMapper(BotConst.MAPPING);
-            exc_mapper = Loader.loadMapper(BotConst.EXC_MAPPING);
-        } catch (IOException e) {
-            BotLogger.botExc("Couldn't update mapper: " + e.getMessage());
+    public boolean onStart(long chatId) {
+        com.aorise.db.entity.ChatContext ctx = dbHandler.getChatContextService().loadByChatIdOrNull(chatId);
+        if (ctx == null) {
+            dbHandler.getChatContextService().save(new com.aorise.db.entity.ChatContext(chatId));
+            return true;
+        } else {
+            return false;
         }
-        return this;
     }
 
-    @SuppressWarnings("unchecked")
-    public FileBot loadContexts() {
-        if (Files.isRegularFile(BotConst.CONTEXTS)) {
-            try (ObjectInputStream objectInputStream = new ObjectInputStream(Files.newInputStream(BotConst.CONTEXTS))) {
-                contextMap = (Map<Long, ChatContext>) objectInputStream.readObject();
-            } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
-            }
-        }
-        return this;
-    }
-
-    public void saveContexts() {
-        try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(Files.newOutputStream(BotConst.CONTEXTS))) {
-            objectOutputStream.writeObject(contextMap);
-            objectOutputStream.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public ChatContext getContext(long chatId) {
+        return dbHandler.getChatContextService().loadByChatIdOrNull(chatId);
     }
 
     @Override
     public void processNonCommandUpdate(Update update) {
         if (update.hasMessage()) {
-            ChatContext context = contextMap.get(update.getMessage().getChatId());
+//            ChatContext context = contextMap.get(update.getMessage().getChatId());
+            com.aorise.db.entity.ChatContext context = dbHandler.getChatContextService().loadByChatIdOrNull(update.getMessage().getChatId());
             Message message = update.getMessage();
             Message replyToMessage = message.getReplyToMessage();
             if (context != null && replyToMessage != null) {
                 if (Objects.equals(context.getGhoulMessageId(), replyToMessage.getMessageId())) {
                     BotLogger.log(String.format("Non command \"oshiete\" message. %s", MessageDescriber.describe(update.getMessage())));
                     oshieteHandler.onGhoulMessage(context, message);
+                    dbHandler.getChatContextService().save(context);
                 }
             }
         } else {
+            if (update.hasCallbackQuery()) {
+                CallbackQuery query = update.getCallbackQuery();
+                Map.Entry<String, String> entry = Utils.splitBy(':', query.getData());
+                if (entry.getKey().equals("rate")) {
+                    showHandler.rate(entry.getValue(), query);
+                    return;
+                }
+            }
             //TODO: for now, it's ok, but talking about the future...
             BotLogger.log(String.format("Update doesn't contain message: %s", update.toString()));
         }
@@ -161,55 +135,7 @@ public class FileBot extends TelegramLongPollingCommandBot implements AutoClosea
         return directory;
     }
 
-    public Map<String, String> getMapper() {
-        return mapper;
-    }
-
-    public Map<String, String> getExc_mapper() {
-        return exc_mapper;
-    }
-
     public int getId() {
         return id;
-    }
-
-    public static <T> T getRandom(List<T> list) {
-        return list.isEmpty() ? null : list.get(random(list.size()));
-    }
-
-    @Override
-    public void close() {
-        saveContexts();
-    }
-
-    public static class ChatContext implements Serializable {
-        private Integer ghoulCounter = null;
-        private Integer ghoulMessageId = null;
-//        private final Map<String, Long> name2Id = new HashMap<>();
-//
-//        public Map<String, Long> getName2Id() {
-//            return name2Id;
-//        }
-
-        public Integer getGhoulCounter() {
-            return ghoulCounter;
-        }
-
-        public void setGhoulCounter(Integer ghoulCounter) {
-            this.ghoulCounter = ghoulCounter;
-        }
-
-        public Integer getGhoulMessageId() {
-            return ghoulMessageId;
-        }
-
-        public void setGhoulMessageId(Integer ghoulMessageId) {
-            this.ghoulMessageId = ghoulMessageId;
-        }
-
-        @Override
-        public String toString() {
-            return "Context(" + ghoulCounter + ")";
-        }
     }
 }

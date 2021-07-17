@@ -5,7 +5,7 @@ import com.aorise.bot.handlers.OshieteHandler;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.bots.AbsSender;
 
-public class OshieteCommand extends FileBotCommand {
+public class OshieteCommand extends FileBotAdminCommand {
     private final OshieteHandler oshieteHandler;
 
     public OshieteCommand(String commandIdentifier, String description, OshieteHandler oshieteHandler) {

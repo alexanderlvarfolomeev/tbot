@@ -1,6 +1,7 @@
 package com.aorise.bot.commands;
 
 import com.aorise.bot.FileBot;
+import com.aorise.util.Utils;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.text.ParseException;
@@ -19,7 +20,7 @@ public class RollCommand extends FileBotCommand {
         String initText = stripCommand(msg);
         try {
             Dices dices = Dices.parse(initText);
-            int rolled = dices.roll(FileBot.getRandom());
+            int rolled = dices.roll(Utils.RANDOM);
             sendMessage(bot, msg, Integer.toString(rolled), true);
             return "Rolled";
         } catch (ParseException | NumberFormatException e) {
