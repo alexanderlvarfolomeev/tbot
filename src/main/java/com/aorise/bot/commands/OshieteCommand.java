@@ -17,4 +17,10 @@ public class OshieteCommand extends FileBotAdminCommand {
     protected String processMessageImpl(FileBot bot, Message message, String[] arguments) {
         return oshieteHandler.startGame(message);
     }
+
+    @Override
+    public void processNonAdminMessage(AbsSender absSender, Message message, String[] arguments) {
+        super.processNonAdminMessage(absSender, message, arguments);
+        //TODO: скинуть мем с канеки кеком
+    }
 }

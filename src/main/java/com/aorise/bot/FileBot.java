@@ -51,7 +51,7 @@ public class FileBot extends TelegramLongPollingCommandBot {
         register(new RollCommand("roll", "Ролльнуть дайсы"));
         register(new ListMapCommand("showlist", "Показать одобренные партией теги"));
         // register(new HelpCommand("help","Помощь"));
-        // register(new GachiCommand("gachi","Gachi"));
+        register(new TestCommand("test", "Test"));
     }
 
     public DBHandler getDbHandler() {

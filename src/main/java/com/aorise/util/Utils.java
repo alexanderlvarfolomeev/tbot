@@ -1,20 +1,10 @@
 package com.aorise.util;
 
-import com.aorise.db.entity.Restriction;
-import com.aorise.db.entity.Syntag;
-import com.aorise.db.entity.Tag;
-import com.aorise.db.service.RestrictionService;
-import com.aorise.db.service.SyntagService;
-import com.aorise.db.service.TagService;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
-import java.io.IOException;
 import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class Utils {
@@ -24,7 +14,7 @@ public class Utils {
         return user.getUserName();
     }
 
-    public static InlineKeyboardMarkup buildInlineMarkup(String prefix, List<String> buttonNames) {
+    public static InlineKeyboardMarkup buildIKM(String prefix, List<String> buttonNames) {
         return InlineKeyboardMarkup
                 .builder()
                 .keyboardRow(
@@ -41,7 +31,7 @@ public class Utils {
                 .build();
     }
 
-    public static InlineKeyboardMarkup buildInlineMarkup1(String prefix, List<Map.Entry<String, String>> buttonNames) {
+    public static InlineKeyboardMarkup buildIKM1(String prefix, List<Map.Entry<String, String>> buttonNames) {
         return InlineKeyboardMarkup
                 .builder()
                 .keyboardRow(
@@ -80,42 +70,4 @@ public class Utils {
     public static <T> T getRandom(List<T> list) {
         return list.isEmpty() ? null : list.get(random(list.size()));
     }
-
-//    public static void save(Map<String, String> mapper, Map<String, String> exc_mapper, TagService tagService, SyntagService syntagService, RestrictionService restrictionService) {
-//        Set<String> actualTags = tagService
-//                .loadAll()
-//                .stream()
-//                .map(Tag::getName)
-//                .collect(Collectors.toSet());
-//        List<Tag> tags = mapper
-//                .values()
-//                .stream()
-//                .distinct()
-//                .filter(t -> !actualTags.contains(t))
-//                .map(s -> new Tag(s, s))
-//                .collect(Collectors.toList());
-//        tagService.save(tags);
-//        tags = tagService.loadAll();
-//        Set<String> actualSyntags = syntagService
-//                .loadAll()
-//                .stream()
-//                .map(Syntag::getName)
-//                .collect(Collectors.toSet());
-//        Map<String, Tag> m = tags
-//                .stream()
-//                .collect(Collectors.toMap(Tag::getName, Function.identity()));
-//        List<Syntag> syntags = mapper
-//                .entrySet()
-//                .stream()
-//                .filter(e -> !actualSyntags.contains(e.getKey()))
-//                .map(e -> new Syntag(e.getKey(), m.get(e.getValue())))
-//                .collect(Collectors.toList());
-//        syntagService.save(syntags);
-//        List<Restriction> restrictions = exc_mapper
-//                .entrySet()
-//                .stream()
-//                .map(e -> new Restriction(m.get(e.getKey()), Restriction.R.CHAT, e.getValue()))
-//                .collect(Collectors.toList());
-//        restrictionService.save(restrictions);
-//    }
 }

@@ -165,3 +165,7 @@ public class RollCommand extends FileBotCommand {
         }
     }
 }
+
+// R -> D R' [D() + R'()]
+// R' -> + D R' [D() + R'()] | - D R' [- D() + R'()] | e [0]
+// D -> ndn [$1 * $2 / 2] | dn [$2 / 2] | n [$1]

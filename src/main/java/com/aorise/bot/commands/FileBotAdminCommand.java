@@ -15,9 +15,13 @@ public abstract class FileBotAdminCommand extends FileBotCommand {
     public void processMessage(AbsSender absSender, Message message, String[] arguments) {
         FileBot bot = (FileBot) absSender;
         if (bot.getId() != message.getFrom().getId()) {
-            BotLogger.log(String.format("%n%s.%nResult: \"%s\" Message was not from Admin.", MessageDescriber.describe(message), this.getCommandIdentifier()));
-            return;
+            processNonAdminMessage(absSender, message, arguments);
+        } else {
+            super.processMessage(absSender, message, arguments);
         }
-        super.processMessage(absSender, message, arguments);
+    }
+
+    public void processNonAdminMessage(AbsSender absSender, Message message, String[] arguments) {
+        BotLogger.log(String.format("%n%s.%nResult: \"%s\" Message was not from Admin.", MessageDescriber.describe(message), this.getCommandIdentifier()));
     }
 }

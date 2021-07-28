@@ -25,7 +25,7 @@ public class HornyCommand extends FileBotCommand {
         } catch (TelegramApiException e) {
             BotLogger.botExc(e.getMessage());
             e.printStackTrace();
-            return "TelegramApiException.";
+            return "TelegramApiException";
         }
         return "Horny sticker was sent.";
     }

@@ -13,18 +13,12 @@ public class ListMapCommand extends FileBotCommand {
 
     @Override
     protected String processMessageImpl(FileBot bot, Message message, String[] arguments) {
-//        try {
-//            String result = Files.readString(BotConst.ACC_MAPPING);
         String result = bot.getDbHandler().getTagService().findAllByCommonTrue()//TODO: check valid
                 .stream()
                 .map(Tag::getName)
                 .sorted(String.CASE_INSENSITIVE_ORDER)
                 .collect(Collectors.joining("\r\n"));
         sendMessage(bot, message, result, false);
-//        } catch (IOException e) {
-//            BotLogger.botExc(e.getMessage());
-//            e.printStackTrace();
-//        }
         return "Listed accepted tags";
     }
 }
