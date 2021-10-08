@@ -70,7 +70,7 @@ public class FileBot extends TelegramLongPollingCommandBot {
         if (ready) {
             return true;
         } else {
-            ready = System.currentTimeMillis() - time > 5_000L;
+            ready = System.currentTimeMillis() - time > 2_000L;
             return ready;
         }
     }

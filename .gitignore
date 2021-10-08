@@ -1,6 +1,7 @@
 .idea
 TelegramBot.iml
 target
+args.txt
 
 data/*
 src/main/resources/props

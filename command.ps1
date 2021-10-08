@@ -1,0 +1,2 @@
+java -XX:TieredStopAtLevel=1 -noverify "-Dspring.output.ansi.enabled=always" "-Dcom.sun.management.jmxremote" "-Dspring.jmx.enabled=true" "-Dspring.liveBeansView.mbeanDomain" "-Dspring.application.admin.enabled=true" "-Dfile.encoding=UTF-8" @$PSScriptRoot/args.txt com.aorise.Runner | Out-Host
+<#mvn spring-boot:run#>

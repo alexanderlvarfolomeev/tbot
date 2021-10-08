@@ -21,7 +21,7 @@ public class MimeHandler {
     private final TypeGuesser guesser;
 
     public MimeHandler() {
-        this.guesser = new MP4AnimationGuesser().andThen(WebpGuesser::new).andThen(ImageOptimisticGuesser::new);
+        this(new MP4AnimationGuesser().andThen(WebpGuesser::new).andThen(ImageOptimisticGuesser::new));
     }
 
     public MimeHandler(TypeGuesser guesser) {

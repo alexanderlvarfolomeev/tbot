@@ -78,10 +78,13 @@ public class Runner {
                             try {
                                 System.out.println("===========");
                                 System.out.print("Text: ");
+                                System.out.flush();
                                 String text = scanner.nextLine();
                                 System.out.print("ChatId: ");
+                                System.out.flush();
                                 String chatId = scanner.nextLine();
                                 System.out.print("Markdown: ");
+                                System.out.flush();
                                 String md = scanner.nextLine();
                                 SendMessage msg = new SendMessage(chatId, text);
                                 msg.enableMarkdown(Boolean.getBoolean(md));
@@ -93,10 +96,11 @@ public class Runner {
                         }
                     }
                 }
-                System.out.println("=============<<");
+                System.out.println("Stopping the session...");
                 if (session.isRunning()) {
                     session.stop();
                 }
+                System.out.println("=============<<");
             } finally {
                 BotLogger.log("Bot stopped");
             }
@@ -105,7 +109,7 @@ public class Runner {
             System.err.println("Could not initialize bot: " + e.getMessage());
         } catch (TelegramApiException e) {
             e.printStackTrace();
-        }
+        } //TODO: org.apache.http.NoHttpResponseException
     }
 
     private enum ConsoleCommands {
